@@ -1,48 +1,46 @@
 from Crypto.Cipher import DES
-from Crypto.Util.Padding import pad, unpad
+from Crypto.Util import Counter
+
 
 clave = b'12345678'
 
-def cifrar_imagen(archivo_entrada, archivo_salida):
-    with open(archivo_entrada, 'rb') as f:
-        datos = f.read()
 
-    cipher = DES.new(clave, DES.MODE_ECB)
-    datos_padded = pad(datos, DES.block_size)
-    datos_cifrados = cipher.encrypt(datos_padded)
-    with open(archivo_salida, 'wb') as f:
-        f.write(datos_cifrados)
+def cifrar_imagen(ruta_entrada, ruta_salida):
 
-    print(f"Imagen cifrada: {archivo_salida}")
+  
+    with open(ruta_entrada, 'rb') as archivo:
+        datos = archivo.read()
+    ctr = Counter.new(64)
 
-def descifrar_imagen(archivo_entrada, archivo_salida):
-    with open(archivo_entrada, 'rb') as f:
-        datos_cifrados = f.read()
-    cipher = DES.new(clave, DES.MODE_ECB)
+    cipher = DES.new(clave, DES.MODE_CTR, counter=ctr)
+
+    datos_cifrados = cipher.encrypt(datos)
+
+    with open(ruta_salida, 'wb') as archivo:
+        archivo.write(datos_cifrados)
+
+    print("Imagen cifrada:", ruta_salida)
+
+def descifrar_imagen(ruta_entrada, ruta_salida):
+
+    # Leer archivo cifrado
+    with open(ruta_entrada, 'rb') as archivo:
+        datos_cifrados = archivo.read()
+
+    ctr = Counter.new(64)
+
+    cipher = DES.new(clave, DES.MODE_CTR, counter=ctr)
+
     datos_descifrados = cipher.decrypt(datos_cifrados)
-    datos_originales = unpad(datos_descifrados, DES.block_size)
-    with open(archivo_salida, 'wb') as f:
-        f.write(datos_originales)
 
-    print(f"Imagen descifrada: {archivo_salida}")
+    with open(ruta_salida, 'wb') as archivo:
+        archivo.write(datos_descifrados)
+
+    print("Imagen recuperada:", ruta_salida)
 
 
-cifrar_imagen(
-    'wallpaper.tif',
-    'imagen_cifrada.des'
-)
+cifrar_imagen("Lin.tiff", "imagen_cifrada.tiff")
+cifrar_imagen("Col.png", "imagen_cifrada.png")
 
-cifrar_imagen(
-    'rdr2.png',
-    'imagen_png_cifrada.des'
-)
-
-descifrar_imagen(
-    'imagen_tif_cifrada.des',
-    'imagen_recuperada.tif'
-)
-
-descifrar_imagen(
-    'imagen_png_cifrada.des',
-    'imagen_png_recuperada.png'
-)
+descifrar_imagen("imagen_cifrada.tiff", "imagen_recuperada.tiff")
+descifrar_imagen("imagen_cifrada.png", "imagen_recuperada.png")
