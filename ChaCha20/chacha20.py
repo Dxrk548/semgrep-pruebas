@@ -1,11 +1,12 @@
 from Crypto.Cipher import ChaCha20
 from Crypto.Random import get_random_bytes
+import os
 
 key = get_random_bytes(32)
 
 def cifrar_imagen(input_file, output_file):
-
-    cipher = ChaCha20.new(key=key)
+    nonce = get_random_bytes(8)
+    cipher = ChaCha20.new(key=key, nonce=nonce)
 
     with open(input_file, 'rb') as f:
         data = f.read()
@@ -20,7 +21,6 @@ def cifrar_imagen(input_file, output_file):
 
 
 def descifrar_imagen(input_file, output_file):
-
     with open(input_file, 'rb') as f:
         nonce = f.read(8)
         ciphertext = f.read()
@@ -35,5 +35,6 @@ def descifrar_imagen(input_file, output_file):
     print("Imagen descifrada")
 
 
-cifrar_imagen("Col.png", "Lin.tiff")
-descifrar_imagen("Lin.tiff", "Col.png")
+if os.path.exists("Col.png"):
+    cifrar_imagen("Col.png", "imagen_chacha.enc")
+    descifrar_imagen("imagen_chacha.enc", "Col_chacha_recuperada.png")
